@@ -15,7 +15,8 @@ const char auth[] = "lGi7s9Kl1q3b9SAJMK-QKwLgB5I0bOhS"; // Auth token from Blynk
 const char* botToken = "7547625655:AAGBM8wOexys1hwLimBc-Afr3RVCC3RPLvo";  //Telegram HTTP API Token
 const char* chatID = "-4773459198";                                       //Chat ID หรือ Chat ID ของกลุ่ม
 
-float tempThreshold = 20.0;      // ค่าอุณหภูมิที่แจ้งเตือน (เริ่มต้น 30°C)
+float tempThreshold = 25.0;      // ค่าอุณหภูมิที่แจ้งเตือน (เริ่มต้น 25°C)
+float lightPercentage = 80.0;      // ค่าความเข้มแสงที่แจ้งเตือน (เริ่มต้น 80)
 
 // GPIO configuration
 #define LDR_PIN 34  // GPIO34 connected to LDR sensor
