@@ -34,7 +34,7 @@ void readSensors();
 
 // ตัวแปรสำหรับควบคุมการส่งข้อความ Telegram
 unsigned long lastTelegramSent = 0;  // เวลาในการส่งข้อความล่าสุด
-const unsigned long TELEGRAM_COOLDOWN = 30000;  // หน่วงเวลา 30 วินาที (30000 มิลลิวินาที)
+const unsigned long TELEGRAM_COOLDOWN = 900000;  // หน่วงเวลา 15 นาที (900000 มิลลิวินาที)
 
 
 void sendTelegramMessage(String alertType, float value) {
