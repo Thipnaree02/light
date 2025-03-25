@@ -6,9 +6,7 @@
 #include <HTTPClient.h>        // ใช้สำหรับส่ง HTTP Request
 #include <WiFiManager.h>       // 🔹 เพิ่ม WiFiManager
 
-// Wi-Fi and Blynk credentials
-const char ssid[] = "Internet.of.thipnaree";      // Your Wi-Fi SSID
-const char pass[] = "123456789";  // Your Wi-Fi password
+// Blynk credentials
 const char auth[] = "lGi7s9Kl1q3b9SAJMK-QKwLgB5I0bOhS"; // Auth token from Blynk app
 
 // 🔹 กำหนด Token และ Chat ID หรือ Chat ID ของกลุ่ม
@@ -32,11 +30,9 @@ BlynkTimer timer;
 // Function prototypes
 void readSensors();
 
-
 // ตัวแปรสำหรับควบคุมการส่งข้อความ Telegram
 unsigned long lastTelegramSent = 0;  // เวลาในการส่งข้อความล่าสุด
 const unsigned long TELEGRAM_COOLDOWN = 10000;  // หน่วงเวลา 10 วินาที (10000 มิลลิวินาที)
-
 
 void sendTelegramMessage(String alertType, float value) {
     if (WiFi.status() != WL_CONNECTED) return;
@@ -64,30 +60,23 @@ void sendTelegramMessage(String alertType, float value) {
     lastTelegramSent = millis();  // อัปเดตเวลาเพื่อป้องกันการส่งซ้ำ
 }
 
+// 🔹 ฟังก์ชันสำหรับตั้งค่า Wi-Fi อัตโนมัติ
+void setupWiFi() {
+  WiFiManager wifiManager;
+  wifiManager.autoConnect("Sompoch_smartFarm");  // เปิด Hotspot ให้ตั้งค่า Wi-Fi เองหากไม่มีการเชื่อมต่อ Wi-Fi ที่เคยเชื่อมต่อได้
+  Serial.println("✅ Wi-Fi Connected!");
+}
 
 void setup() {
   Serial.begin(9600);
   pinMode(LDR_PIN, INPUT);
-
   dht.begin();
 
-  Serial.print("Connecting to Wi-Fi: ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, pass);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nWi-Fi connected");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-
-  WiFi.setAutoReconnect(true);
-  WiFi.persistent(true);
+  // เชื่อมต่อ Wi-Fi โดยใช้ WiFiManager
+  setupWiFi();
 
   Serial.println("Connecting to Blynk server...");
-  Blynk.begin(auth, ssid, pass, "iotservices.thddns.net", 5535);  //ตัวอย่าง Blynk Public Server 
+  Blynk.begin(auth, WiFi.SSID().c_str(), WiFi.psk().c_str(), "iotservices.thddns.net", 5535);  // ตัวอย่าง Blynk Public Server
 
   timer.setInterval(2000L, readSensors);   // Read sensors every 15 minute
 }
@@ -97,8 +86,6 @@ BLYNK_CONNECTED() {
   Blynk.syncAll();
   Serial.println("LED state set to: ON (forced ON after connection)");
 }
-
-
 
 void loop() {
     if (Blynk.connected()) {
@@ -112,9 +99,9 @@ void loop() {
 }
 
 void readSensors() {
-    // อ่านค่าความเข้มแสง
+    // อ่านค่าความเข้มแสง (กลับค่าให้มืด = 0%, สว่าง = 100%)
     int lightValue = analogRead(LDR_PIN);
-    float lightPercentage = (lightValue / 4095.0) * 100.0;
+    float lightPercentage = (1 - (lightValue / 4095.0)) * 100.0;
     Blynk.virtualWrite(V3, lightPercentage);
 
     // อ่านค่าอุณหภูมิและความชื้น
@@ -130,7 +117,7 @@ void readSensors() {
     }
 
     // 🔹 ตรวจสอบค่าแล้วแจ้งเตือนผ่าน Telegram
-    if (lightPercentage > 80.0) {  // กำหนดค่าความเข้มแสงสูงสุดที่ 80%
+    if (lightPercentage > 80.0) {  // เมื่อความเข้มแสงมากกว่า 80% (สว่างจ้า)
         sendTelegramMessage("💡 ความเข้มแสงสูงเกินกำหนด!", lightPercentage);
     }
     if (temperature > 25.0) {
@@ -140,10 +127,3 @@ void readSensors() {
         sendTelegramMessage("💧 ความชื้นต่ำเกิน 40%", humidity);
     }
 }
-
-float measureLightIntensity() {
-    int lightValue = analogRead(LDR_PIN);
-    return (lightValue / 4095.0) * 100.0;
-}
-
-
