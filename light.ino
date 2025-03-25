@@ -35,7 +35,7 @@ void readSensors();
 
 // ตัวแปรสำหรับควบคุมการส่งข้อความ Telegram
 unsigned long lastTelegramSent = 0;  // เวลาในการส่งข้อความล่าสุด
-const unsigned long TELEGRAM_COOLDOWN = 900000;  // หน่วงเวลา 15 นาที (900000 มิลลิวินาที)
+const unsigned long TELEGRAM_COOLDOWN = 10000;  // หน่วงเวลา 10 วินาที (10000 มิลลิวินาที)
 
 
 void sendTelegramMessage(String alertType, float value) {
@@ -89,7 +89,7 @@ void setup() {
   Serial.println("Connecting to Blynk server...");
   Blynk.begin(auth, ssid, pass, "iotservices.thddns.net", 5535);  //ตัวอย่าง Blynk Public Server 
 
-  timer.setInterval(2000L, readSensors);   // Read sensors every 2 seconds
+  timer.setInterval(2000L, readSensors);   // Read sensors every 15 minute
 }
 
 BLYNK_CONNECTED() {
